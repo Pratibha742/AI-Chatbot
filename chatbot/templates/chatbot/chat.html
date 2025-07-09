@@ -1,0 +1,215 @@
+{% extends "chatbot/base.html" %}
+{% load static %}
+
+{% block title %}AI Chat{% endblock %}
+
+{% block extra_css %}
+<!-- Prism CSS for code styling -->
+<link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+<!-- Prism JS for code parsing -->
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-python.min.js"></script>
+
+<link rel="stylesheet" href="{% static 'chatbot/styles.css' %}?v=4">
+<style>
+    .logout-container {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+    }
+
+    .logout-container form button {
+        background-color: #ff4d4d;
+        border: none;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .logout-container form button:hover {
+        background-color: #e60000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logout-container">
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</div>
+
+<div class="home-button-container">
+    <form method="post" action="{% url 'landing_page' %}">
+        {% csrf_token %}
+        <button type="submit">Home</button>
+    </form>
+    
+</div>
+
+
+
+<div class="chat-container">
+    {% comment %} <h2>💬 AI Chat</h2> {% endcomment %}
+    <div id="chat-box" class="chat-history"></div>
+    
+    
+    <form id="chat-form">
+        <input type="text" id="message" placeholder="Type your message..." required />
+        <button type="submit">Send</button>
+        <button type="button" id="mic-button" class="mic">🎤 Speak</button>
+        <button type="button" id="stop-button" class="stop" style="display: none;">🛑</button>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message');
+    const chatBox = document.getElementById('chat-box');
+    const micButton = document.getElementById('mic-button');
+    const stopButton = document.getElementById('stop-button');
+
+    let recognition;
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const userMessage = messageInput.value;
+        if (!userMessage.trim()) return;
+        addMessage('user', userMessage);
+        messageInput.value = '';
+
+        
+
+            const response = await fetch('/api/chat/', {
+            method: 'POST',
+            headers: { 
+                "Content-Type": "application/json" ,
+                
+            },
+            body: JSON.stringify({
+                 message: userMessage,
+                 
+                })
+        });
+
+        const data = await response.json();
+        addMessage('bot', data.response);
+    };
+
+    {% comment %} function addMessage(role, text) {
+        const div = document.createElement('div');
+        div.className = role;
+            
+    if (role === 'bot') {
+        div.innerHTML = text;  
+    } else {
+        div.textContent = text;  
+    }
+
+    
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        Prism.highlightAll()
+    } {% endcomment %}
+
+    
+    function addMessage(role, text) {
+        const div = document.createElement('div');
+        div.className = role;
+
+        if (role === 'bot') {
+            // Detect if response contains triple backtick code block
+            const codeRegex = /```(.*?)\n([\s\S]*?)```/g;
+            let match;
+            let lastIndex = 0;
+            let formattedHTML = '';
+
+            while ((match = codeRegex.exec(text)) !== null) {
+                // Append non-code text before this code block
+                const before = text.slice(lastIndex, match.index).trim();
+                if (before) {
+                    formattedHTML += `<p>${before}</p>`;
+                }
+
+                const language = match[1].trim() || 'python';
+                const code = match[2].trim();
+
+                formattedHTML += `
+                    <div class="code-block-container" style="position: relative;">
+                        <button class="copy-btn" onclick="copyCode(this)">📋 Copy</button>
+                        <pre><code class="language-${language}">${Prism.highlight(code, Prism.languages[language] || Prism.languages.python, language)}</code></pre>
+                    </div>
+                `;
+
+                lastIndex = codeRegex.lastIndex;
+            }
+
+            // Append any remaining text after the last code block
+            const after = text.slice(lastIndex).trim();
+            if (after) {
+                formattedHTML += `<p>${after}</p>`;
+            }
+
+            div.innerHTML = formattedHTML || `<p>${text}</p>`; // fallback if no match
+        } else {
+            div.textContent = text;
+        }
+
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        Prism.highlightAll(); // apply Prism highlighting
+    }
+
+
+
+    micButton.addEventListener('click', () => {
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.start();
+        micButton.classList.add('recording');
+        stopButton.style.display = 'inline-block';
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            messageInput.value = transcript;
+            form.dispatchEvent(new Event('submit'));
+            stopRecording();
+        };
+
+        recognition.onerror = (event) => {
+            alert('Voice recognition failed: ' + event.error);
+            stopRecording();
+        };
+    });
+
+    stopButton.addEventListener('click', stopRecording);
+
+    function stopRecording() {
+        if (recognition) {
+            recognition.stop();
+            recognition = null;
+        }
+        micButton.classList.remove('recording');
+        stopButton.style.display = 'none';
+    }
+</script>
+
+<script>
+    function copyCode(button) {
+        const code = button.nextElementSibling.textContent;
+        navigator.clipboard.writeText(code).then(() => {
+            button.textContent = "✅ Copied!";
+            setTimeout(() => button.textContent = "📋 Copy", 2000);
+        });
+    }
+</script>
+
+
+{% endblock %}

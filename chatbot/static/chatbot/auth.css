@@ -1,0 +1,92 @@
+/* auth.css - Dark theme login/register styling */
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #0f0f0f;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    text-align: center;
+}
+
+.welcome-msg {
+    margin-bottom: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #00ffff;
+    animation: fadeIn 1s ease;
+}
+
+.auth-container {
+    background: #1a1a1a;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+    width: 350px;
+    animation: fadeIn 0.8s ease;
+}
+
+.auth-container h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #00ffff;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 16px;
+    background: #2c2c2c;
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+form input:focus {
+    border-color: #00ffff;
+    outline: none;
+    background: #222;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background: #00ffff;
+    color: #000;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button[type="submit"]:hover {
+    background: #00cccc;
+}
+
+a {
+    display: block;
+    margin-top: 16px;
+    color: #00ffff;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+a:hover {
+    color: #00cccc;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

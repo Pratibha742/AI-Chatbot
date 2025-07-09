@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <link rel="stylesheet" href="{% static 'chatbot/styles.css' %}?v=2">
+</head>
+<body class = "landing-body">
+    <div class = "landing-container">
+        <h1>🤖 Welcome to AI Chatbot</h1>
+        <p>Start a Conversation with the bot below</p>
+        <a href="{% url 'chat_page' %}" class ="start-button">Start Chatting</a>
+    </div>
+</body>
+</html>

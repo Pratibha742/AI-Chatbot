@@ -1,0 +1,18 @@
+{% extends "chatbot/base.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'chatbot/auth.css' %}">
+{% endblock %}
+{% block content %}
+<div class =" auth-container">
+<h2>Login</h2>
+<form method = "post">
+    {% csrf_token %}
+    {% comment %} {{ form.as_p }} {% endcomment %}
+    {{form.username}}
+    {{form.password}}
+    <button type = "submit">Login</button>
+</form>
+<a href="{% url 'register' %}">No account? Register</a>
+</div>
+{% endblock  %}
