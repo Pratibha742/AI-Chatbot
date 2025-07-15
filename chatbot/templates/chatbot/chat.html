@@ -82,23 +82,35 @@
         addMessage('user', userMessage);
         messageInput.value = '';
 
+        // Show generating message
+    const generatingDiv = document.createElement('div');
+    generatingDiv.className = 'bot';
+    generatingDiv.textContent = 'Generating response...';
+    chatBox.appendChild(generatingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;    
+
         
-
-            const response = await fetch('/api/chat/', {
-            method: 'POST',
-            headers: { 
-                "Content-Type": "application/json" ,
+try {
+        const response = await fetch('/api/chat/', {
+        method: 'POST',
+        headers: { 
+            "Content-Type": "application/json" ,
                 
-            },
-            body: JSON.stringify({
-                 message: userMessage,
+        },
+        body: JSON.stringify({
+            message: userMessage,
                  
-                })
-        });
+            })
+    });
 
-        const data = await response.json();
-        addMessage('bot', data.response);
-    };
+    const data = await response.json();
+    generatingDiv.remove();
+    addMessage('bot', data.response);
+    } catch (error){
+        generatingDiv.remove();
+        addMessage('bot', '⚠️ Error generating response. Please try again.');
+    }
+};
 
     {% comment %} function addMessage(role, text) {
         const div = document.createElement('div');

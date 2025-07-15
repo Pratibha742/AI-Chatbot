@@ -7,6 +7,10 @@ from .forms import CustomRegisterForm,CustomLoginForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from . models import ChatMessage
+from django.contrib import messages
+from django.contrib.auth.views import LogoutView
+from django.urls import reverse_lazy
+
 
 
 
@@ -60,5 +64,20 @@ def chat_view(request):
 class CustomLoginView(LoginView):
     template_name = 'chatbot/login.html'
     authentication_form = CustomLoginForm
+
+    def get(self, request, *args, **kwargs):
+        # Clear any leftover messages before showing the login page
+        storage = messages.get_messages(request)
+        for _ in storage:
+            pass  # this simply clears the message queue
+        return super().get(request, *args, **kwargs)
+
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Invalid credentials or account does not exist.")
+        return super().form_invalid(form)
+    
+class CustomLogoutView(LogoutView):
+    next_page = reverse_lazy('login')
 
 
